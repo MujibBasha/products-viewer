@@ -12,8 +12,9 @@
     :root {
       --bg: #f5f6f8;
       --card: #ffffff;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
+      --primary: #16a34a;
+      --primary-dark: #15803d;
+      --accent: #2563eb;
       --success: #16a34a;
       --danger: #dc2626;
       --text: #1f2937;
@@ -35,12 +36,12 @@
     header {
       background: linear-gradient(135deg, #16a34a 0%, #2563eb 100%);
       color: white;
-      padding: 24px 0;
+      padding: 28px 0;
       margin-bottom: 24px;
       box-shadow: var(--shadow);
     }
-    header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    header p { opacity: 0.9; font-size: 14px; }
+    header h1 { font-size: 30px; font-weight: 700; margin-bottom: 6px; }
+    header p { opacity: 0.92; font-size: 15px; }
 
     .toolbar {
       background: var(--card);
@@ -55,7 +56,7 @@
     }
     .toolbar input[type="search"],
     .toolbar select {
-      padding: 10px 14px;
+      padding: 11px 14px;
       border: 1px solid var(--border);
       border-radius: 8px;
       font-family: inherit;
@@ -67,7 +68,7 @@
     .toolbar select:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
     }
 
     .stats {
@@ -183,7 +184,7 @@
     }
     .badge {
       display: inline-block;
-      padding: 3px 8px;
+      padding: 3px 9px;
       font-size: 11px;
       border-radius: 999px;
       background: #eef2ff;
@@ -193,20 +194,21 @@
     .badge.brand { background: #dbeafe; color: #1e40af; }
     .badge.affiliate { background: #fef3c7; color: #92400e; }
     .desc {
-      font-size: 12px;
+      font-size: 12.5px;
       color: var(--muted);
-      line-height: 1.6;
+      line-height: 1.65;
       margin-bottom: 12px;
       display: -webkit-box;
       -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
       overflow: hidden;
       flex: 1;
+      white-space: pre-line;
     }
     .actions { display: flex; gap: 6px; margin-top: auto; }
     .copy-btn {
       flex: 1;
-      padding: 10px;
+      padding: 11px;
       background: var(--primary);
       color: white;
       border: none;
@@ -242,12 +244,6 @@
       padding: 16px;
       border-radius: var(--radius);
       margin: 20px 0;
-    }
-    .error-box code {
-      background: rgba(0,0,0,0.05);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 13px;
     }
 
     .toast {
@@ -306,13 +302,6 @@
 
   <script>
     const IMG_BASE = 'https://api.mdm.express/api/media/';
-
-    // Source label mapping for the public catalog
-    const SOURCE_LABELS = {
-      'MDM-MP': 'ماركة',
-      'MDM-DSH': 'Affiliate'
-    };
-
     let allProducts = [];
 
     const $search = document.getElementById('search');
@@ -329,52 +318,18 @@
       toastTimer = setTimeout(() => $toast.classList.remove('show'), 1800);
     }
 
-    function htmlToText(html) {
-      if (!html) return '';
-      const div = document.createElement('div');
-      div.innerHTML = html;
-      div.querySelectorAll('br').forEach(b => b.replaceWith('\n'));
-      div.querySelectorAll('p, li, h1, h2, h3, h4').forEach(el => {
-        el.appendChild(document.createTextNode('\n'));
-      });
-      return (div.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
-    }
-
-    function shortDesc(html, max = 200) {
-      const text = htmlToText(html).replace(/\s+/g, ' ');
-      return text.length > max ? text.slice(0, max) + '...' : text;
-    }
-
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[c]));
     }
 
-    // Strip price/MOQ/delivery lines that are commonly embedded in descriptions
-    // so the public catalog doesn't leak internal price info.
-    function cleanPublicDescription(html) {
-      if (!html) return '';
-      let text = htmlToText(html);
-      const dropPatterns = [
-        /^\s*💰.*$/gm,
-        /^\s*📦.*$/gm,
-        /^\s*⏱️.*$/gm,
-        /^\s*السعر[:：].*$/gm,
-        /^\s*الحد\s+الأدنى.*$/gm,
-        /^\s*التوصيل.*$/gm,
-      ];
-      for (const re of dropPatterns) text = text.replace(re, '');
-      return text.replace(/\n{3,}/g, '\n\n').trim();
-    }
-
     function buildCopyText(p) {
       const parts = [];
-      parts.push(p.name || '');
+      if (p.name) parts.push(p.name);
       parts.push('');
-      const desc = cleanPublicDescription(p.description);
-      if (desc) {
-        parts.push(desc);
+      if (p.description) {
+        parts.push(p.description);
         parts.push('');
       }
       if (p.category && p.category.nameAr) {
@@ -515,10 +470,10 @@
         meta.appendChild(b);
       }
 
-      if (p.source && SOURCE_LABELS[p.source]) {
+      if (p.sourceLabel) {
         const sb = document.createElement('span');
-        sb.className = 'badge ' + (p.source === 'MDM-MP' ? 'brand' : 'affiliate');
-        sb.textContent = SOURCE_LABELS[p.source];
+        sb.className = 'badge ' + (p.sourceLabel === 'ماركة' ? 'brand' : 'affiliate');
+        sb.textContent = p.sourceLabel;
         meta.appendChild(sb);
       }
 
@@ -526,7 +481,7 @@
 
       const desc = document.createElement('div');
       desc.className = 'desc';
-      desc.textContent = shortDesc(cleanPublicDescription(p.description));
+      desc.textContent = p.description || '';
       body.appendChild(desc);
 
       const actions = document.createElement('div');
